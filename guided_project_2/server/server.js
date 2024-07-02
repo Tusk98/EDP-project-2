@@ -8,7 +8,7 @@ dotenv.config();
 const url = process.env.MONGO_DB_URL;
 const dbName = process.env.MONGO_DB;
 const planetCollectionName = process.env.MONGO_DB_PLANETS;
-const filmsCollectioName = process.env.MONGO_DB_FILMS;
+const filmsCollectionName = process.env.MONGO_DB_FILMS;
 const charactersCollectionName = process.env.MONGO_DB_CHARACTERS;
 
 
@@ -23,7 +23,6 @@ app.get('/characters', async (req, res) => {
         const client = await MongoClient.connect(url);
         const db = client.db(dbName);
         const collection = db.collection(charactersCollectionName);
-        //const collection = db.collection('characters');
         const chars = await collection.find({}).toArray();
 
         res.json(chars);
@@ -38,8 +37,7 @@ app.get('/films', async (req, res) => {
     try {
         const client = await MongoClient.connect(url);
         const db = client.db(dbName);
-        const collection = db.collection(filmsCollectioName);
-        //const collection = db.collection('films');
+        const collection = db.collection(filmsCollectionName); 
         const films = await collection.find({}).toArray();
 
         res.json(films);
@@ -61,6 +59,32 @@ app.get('/planets', async (req, res) => {
     } catch (err) {
         console.error("Error:", err);
         res.status(500).send("PLANETS/GET NOT FOUND");
+    }
+});
+
+// films/:id/characters
+app.get('/films/:id/characters', async (req, res) => {
+    try {
+        const filmId = parseInt(req.params.id); 
+        const client = await MongoClient.connect(url);
+        const db = client.db(dbName);
+        const collection = db.collection(filmsCollectionName);
+
+        // Check if the film ID exists 
+        const film = await collection.find({id: filmId}).toArray();
+        if (!film) { 
+            return res.status(404).send('FILM NOT FOUND - films/:id/characters');
+        }
+
+        const charactersIds = await db.collection('films_characters').find({film_id : filmId}).toArray(); // Query 'film_characters' collection for array of IDs 
+        const idSearch = charactersIds.map(item => item.character_id);          // Turn JSON into just array of character IDs 
+        const characters = await db.collection(charactersCollectionName).find({id: {$in: idSearch}}).toArray();  // Query into 'characters' collection with array of IDs
+
+        const result = characters; 
+        res.json(result);
+    } catch (err) {
+        console.error("Error:", err);
+        res.status(500).send("FILMS/:ID/CHARACTERS NOT FOUND");
     }
 });
 
