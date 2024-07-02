@@ -62,6 +62,57 @@ app.get('/planets', async (req, res) => {
     }
 });
 
+// api/characters/id
+app.get('/characters/:id', async (req, res) => {
+    try {
+        const character_id = parseInt(req.params.id);
+        const client = await MongoClient.connect(url);
+        const db = client.db(dbName);
+        const collection = db.collection(charactersCollectionName);
+        const chars = await collection.find({id: character_id}).toArray();
+       
+
+        res.json(chars);
+    } catch (err) {
+        console.error("Error:", err);
+        res.status(500).send("CHARACTERS/ID/GET NOT FOUND");
+    }
+});
+
+// api/films/id
+app.get('/films/:id', async (req, res) => {
+    try {
+        const film_id = parseInt(req.params.id);
+        const client = await MongoClient.connect(url);
+        const db = client.db(dbName);
+        const collection = db.collection(filmsCollectioName);
+        const chars = await collection.find({id: film_id}).toArray();
+       
+
+        res.json(chars);
+    } catch (err) {
+        console.error("Error:", err);
+        res.status(500).send("FILMS/ID/GET NOT FOUND");
+    }
+});
+
+// api/planet/id
+app.get('/planets/:id', async (req, res) => {
+    try {
+        const planet_id = parseInt(req.params.id);
+        const client = await MongoClient.connect(url);
+        const db = client.db(dbName);
+        const collection = db.collection(planetCollectionName);
+        const chars = await collection.find({id: planet_id}).toArray();
+       
+
+        res.json(chars);
+    } catch (err) {
+        console.error("Error:", err);
+        res.status(500).send("PLANETS/ID/GET NOT FOUND");
+    }
+});
+
 // films/:id/characters
 app.get('/films/:id/characters', async (req, res) => {
     try {
