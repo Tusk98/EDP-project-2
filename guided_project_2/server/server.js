@@ -153,9 +153,9 @@ app.get('/films/:id/planets', async (req, res) => {
             return res.status(404).send('FILM NOT FOUND - films/:id/planets');
         }
 
-        const planetIds = await db.collection('films_planets').find({film_id : filmId}).toArray(); // Query 'film_characters' collection for array of IDs 
-        const idSearch = planetIds.map(item => item.planet_id);          // Turn JSON into just array of character IDs 
-        const planets = await db.collection(planetCollectionName).find({id: {$in: idSearch}}).toArray();  // Query into 'characters' collection with array of IDs
+        const planetIds = await db.collection('films_planets').find({film_id : filmId}).toArray(); // Query 'film_planets' collection for array of IDs 
+        const idSearch = planetIds.map(item => item.planet_id);          // Turn JSON into just array of planet IDs 
+        const planets = await db.collection(planetCollectionName).find({id: {$in: idSearch}}).toArray();  // Query into 'planets' collection with array of IDs
 
         const result = planets; 
         res.json(result);
