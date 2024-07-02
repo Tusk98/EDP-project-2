@@ -10,6 +10,8 @@ const dbName = process.env.MONGO_DB;
 const planetCollectionName = process.env.MONGO_DB_PLANETS;
 const filmsCollectionName = process.env.MONGO_DB_FILMS;
 const charactersCollectionName = process.env.MONGO_DB_CHARACTERS;
+const films_characters = process.env.MONGO_DB_FILMS_CHARACTERS; 
+const films_planets = process.env.MONGO_DB_FILMS_PLANETS
 
 
 const app = express();
@@ -127,7 +129,7 @@ app.get('/films/:id/characters', async (req, res) => {
             return res.status(404).send('FILM NOT FOUND - films/:id/characters');
         }
 
-        const charactersIds = await db.collection('films_characters').find({film_id : filmId}).toArray(); // Query 'film_characters' collection for array of IDs 
+        const charactersIds = await db.collection(films_characters).find({film_id : filmId}).toArray(); // Query 'film_characters' collection for array of IDs 
         const idSearch = charactersIds.map(item => item.character_id);          // Turn JSON into just array of character IDs 
         const characters = await db.collection(charactersCollectionName).find({id: {$in: idSearch}}).toArray();  // Query into 'characters' collection with array of IDs
 
@@ -153,7 +155,7 @@ app.get('/films/:id/planets', async (req, res) => {
             return res.status(404).send('FILM NOT FOUND - films/:id/planets');
         }
 
-        const planetIds = await db.collection('films_planets').find({film_id : filmId}).toArray(); // Query 'film_planets' collection for array of IDs 
+        const planetIds = await db.collection(films_planets).find({film_id : filmId}).toArray(); // Query 'film_planets' collection for array of IDs 
         const idSearch = planetIds.map(item => item.planet_id);          // Turn JSON into just array of planet IDs 
         const planets = await db.collection(planetCollectionName).find({id: {$in: idSearch}}).toArray();  // Query into 'planets' collection with array of IDs
 
@@ -164,6 +166,59 @@ app.get('/films/:id/planets', async (req, res) => {
         res.status(500).send("FILMS/:ID/PLANETS NOT FOUND");
     }
 });
+
+//planets/:id/films
+app.get('/planets/:id/films', async (req, res) => {
+    try {
+        const planetId = parseInt(req.params.id); 
+        const client = await MongoClient.connect(url);
+        const db = client.db(dbName);
+        const collection = db.collection(planetCollectionName);
+
+        // Check if the planet ID exists 
+        const planets = await collection.find({id: planetId}).toArray();
+        if (!planets) { 
+            return res.status(404).send('PLANET NOT FOUND - planets/:id/films');
+        }
+
+        /////////////////////////////
+        const filmIds = await db.collection(films_planets).find({planet_id : planetId}).toArray(); // Query 'film_planets' collection for array of film IDs using planetId  
+        const idSearch = filmIds.map(item => item.film_id);          // Turn JSON into just array of film IDs 
+        const films = await db.collection(filmsCollectionName).find({id: {$in: idSearch}}).toArray();  // Query into 'films' collection with array of Planet IDs
+
+        const result = films; 
+        res.json(result);
+    } catch (err) {
+        console.error("Error:", err);
+        res.status(500).send("FILMS/:ID/PLANETS NOT FOUND");
+    }
+});
+
+//planets/:id/characters
+app.get('/planets/:id/characters', async (req, res) => {
+    try {
+        const planetId = parseInt(req.params.id); 
+        const client = await MongoClient.connect(url);
+        const db = client.db(dbName);
+        const collection = db.collection(planetCollectionName);
+
+        // Check if the planet ID exists 
+        const planets = await collection.find({id: planetId}).toArray();
+        if (!planets) { 
+            return res.status(404).send('PLANET NOT FOUND - planets/:id/characters');
+        }
+
+        // Query into 'characters' collection for homeworlds with array of Planet IDs
+        const characters = await db.collection(charactersCollectionName).find({homeworld: planetId}).toArray();  
+
+        const result = characters; 
+        res.json(result);
+    } catch (err) {
+        console.error("Error:", err);
+        res.status(500).send("FILMS/:ID/PLANETS NOT FOUND");
+    }
+});
+
 
 // -------- APP LISTENER ---------
 app.listen(PORT, () => {
