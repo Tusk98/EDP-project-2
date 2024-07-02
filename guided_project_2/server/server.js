@@ -20,8 +20,10 @@ app.get('/planets', async (req, res) => {
         const client = await MongoClient.connect(url);
         const db = client.db(dbName);
         const collection = db.collection(planetCollectionName);
-        const socks = await collection.find({}).toArray();
-        res.json(socks);
+        //const socks = await collection.find({}).toArray();
+        const planet = {id: "test object", name: "generic planet"}
+
+        res.json(planet);
     } catch (err) {
         console.error("Error:", err);
         res.status(500).send("PLANETS NO FOUND");
