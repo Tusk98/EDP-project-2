@@ -139,6 +139,32 @@ app.get('/films/:id/characters', async (req, res) => {
     }
 });
 
+// films/:id/planets
+app.get('/films/:id/planets', async (req, res) => {
+    try {
+        const filmId = parseInt(req.params.id); 
+        const client = await MongoClient.connect(url);
+        const db = client.db(dbName);
+        const collection = db.collection(filmsCollectionName);
+
+        // Check if the film ID exists 
+        const film = await collection.find({id: filmId}).toArray();
+        if (!film) { 
+            return res.status(404).send('FILM NOT FOUND - films/:id/planets');
+        }
+
+        const planetIds = await db.collection('films_planets').find({film_id : filmId}).toArray(); // Query 'film_characters' collection for array of IDs 
+        const idSearch = planetIds.map(item => item.planet_id);          // Turn JSON into just array of character IDs 
+        const planets = await db.collection(planetCollectionName).find({id: {$in: idSearch}}).toArray();  // Query into 'characters' collection with array of IDs
+
+        const result = planets; 
+        res.json(result);
+    } catch (err) {
+        console.error("Error:", err);
+        res.status(500).send("FILMS/:ID/PLANETS NOT FOUND");
+    }
+});
+
 // -------- APP LISTENER ---------
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
