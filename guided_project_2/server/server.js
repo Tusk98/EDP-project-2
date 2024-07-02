@@ -139,6 +139,31 @@ app.get('/films/:id/characters', async (req, res) => {
     }
 });
 
+// api/characters/:id/films
+app.get('/characters/:id/films', async (req, res) => {
+    try {
+        const character_id = parseInt(req.params.id);
+        const client = await MongoClient.connect(url);
+        const db = client.db(dbName);
+        const collection = db.collection(charactersCollectionName);
+
+        // Check if the character ID exists 
+        const character = await collection.find({id: character_id}).toArray();
+        if (!character) { 
+            return res.status(404).send('CHARACTER NOT FOUND - characters/:id/films');
+        }
+
+        const filmIds = await db.collection('films_characters').find({character_id : character_id}).toArray(); 
+        const idSearch = filmIds.map(item => item.film_id);        
+        const films = await db.collection(filmsCollectionName).find({id: {$in: idSearch}}).toArray();  
+
+        res.json(films);
+    } catch (err) {
+        console.error("Error:", err);
+        res.status(500).send("CHARACTERS/ID/FILM NOT FOUND");
+    }
+});
+
 // -------- APP LISTENER ---------
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
