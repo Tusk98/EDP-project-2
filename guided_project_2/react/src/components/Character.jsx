@@ -6,19 +6,17 @@ function Character() {
 
   let navigate = useNavigate();
   let params = useParams();
-  //let url = "/api";
-  let url = "http://localhost:3000/";
+  let url = "http://localhost:3000";
   async function getCharacter() {
     let fetchedCharacter = await fetchCharacter(params.id);
     fetchedCharacter.homeworld = await fetchHomeworld(fetchedCharacter);
     fetchedCharacter.films = await fetchFilms();
-    console.log(fetchedCharacter);
-    setCharacter(fetchedCharacter);
+    console.log("AAAAAA", fetchedCharacter);
+    setCharacter(fetchedCharacter[0]);
   }
 
   async function fetchCharacter() {
     let result = await fetch(`${url}/characters/${params.id}`);
-    console.log("URL: ", `${url}/characters/${params.id}`)
     return result.json();
   }
 
@@ -36,6 +34,7 @@ function Character() {
     return ret;
   };
 
+  console.log("BBBBB");
   useEffect(() => getCharacter, []);
 
   function handlePlanetClick(id) {

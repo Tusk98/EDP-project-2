@@ -87,7 +87,7 @@ app.get('/films/:id', async (req, res) => {
         const film_id = parseInt(req.params.id);
         const client = await MongoClient.connect(url);
         const db = client.db(dbName);
-        const collection = db.collection(filmsCollectioName);
+        const collection = db.collection(filmsCollectionName);
         const chars = await collection.find({id: film_id}).toArray();
        
 
